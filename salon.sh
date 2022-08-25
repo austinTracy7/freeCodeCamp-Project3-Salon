@@ -51,7 +51,7 @@ echo $SERVICE_ID_FOUND
 # running the main script
 echo -e '\n~~~~~ Simply A Salon ~~~~~\n'
 
-GET_DESIRED_SERVICE "How may we be of service for you today?"
+GET_DESIRED_SERVICE "How may we be of service for you today? Please type a service_id."
 
 SERVICE_NAME=$($PSQL "SELECT name FROM services WHERE service_id=$SERVICE_ID_SELECTED;")
 
@@ -59,16 +59,20 @@ echo "Great, what is your phone number?"
 read CUSTOMER_PHONE
 
 CUSTOMER_NAME=$($PSQL "SELECT name FROM customers WHERE phone='$CUSTOMER_PHONE';")
+CUSTOMER_ID=$($PSQL "SELECT customer_id FROM customers WHERE phone='$CUSTOMER_PHONE';")
 
-if [ -z CUSTOMER_NAME ]
+if [ -z $CUSTOMER_NAME ]
 then
   echo "What is your name?"
   read CUSTOMER_NAME
   INSERT_RESPONSE=$($PSQL "INSERT INTO customers(name,phone) values('$CUSTOMER_NAME','$CUSTOMER_PHONE');")
+  CUSTOMER_ID=$($PSQL "SELECT customer_id FROM customers WHERE phone='$CUSTOMER_PHONE';")
 fi
 
 echo "Okay. Just one more thing. When would you like to come by?"
 read SERVICE_TIME
+
+INSERT_RESPONSE=$($PSQL "INSERT INTO appointments(customer_id,service_id,time) values($CUSTOMER_ID,$SERVICE_ID_SELECTED,'$SERVICE_TIME');")
 
 echo "I have put you down for a $SERVICE_NAME at $SERVICE_TIME, $CUSTOMER_NAME."
 
